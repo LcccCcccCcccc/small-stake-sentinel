@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="A human-gated AI agent for tiny, evidence-backed business experiments." />
+    <title>Small‑Stake Sentinel</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main>
+      <header class="hero">
+        <div>
+          <p class="eyebrow">CAPITAL-PRESERVATION AGENT</p>
+          <h1>Small‑Stake<br /><span>Sentinel</span></h1>
+          <p class="lede">先核验证据，再计算概率收益。任何付款或对外承诺，都停在人类批准门前。</p>
+        </div>
+        <section class="bankroll" aria-label="Current bankroll">
+          <p>可用本金</p>
+          <strong>¥<span id="bankrollDisplay">100.00</span></strong>
+          <span class="status"><i></i> 资金未动用</span>
+        </section>
+      </header>
+
+      <section class="workspace">
+        <form id="opportunityForm" class="panel form-panel">
+          <div class="panel-title"><span>01</span><h2>输入机会</h2></div>
+          <label>机会名称<input name="name" value="低成本数字服务订单" required /></label>
+          <div class="grid-2">
+            <label>投入成本（¥）<input name="inputCost" type="number" min="0" step="0.01" value="10" /></label>
+            <label>预计收入（¥）<input name="expectedRevenue" type="number" min="0" step="0.01" value="45" /></label>
+            <label>平台费用（¥）<input name="platformFees" type="number" min="0" step="0.01" value="5" /></label>
+            <label>运输/交付（¥）<input name="shipping" type="number" min="0" step="0.01" value="0" /></label>
+            <label>成功概率（%）<input name="successProbability" type="number" min="0" max="100" value="60" /></label>
+            <label>退款概率（%）<input name="refundProbability" type="number" min="0" max="100" value="5" /></label>
+          </div>
+          <label>证据检索词<input name="searchQuery" value="digital service buyer budget platform fee" /></label>
+          <div class="checks">
+            <label><input name="hasVerifiableBuyer" type="checkbox" checked /> 有可验证买家/付款方</label>
+            <label><input name="requiresAdvanceFee" type="checkbox" /> 要求预付费用</label>
+            <label><input name="externalCommitment" type="checkbox" checked /> 会产生外部承诺</label>
+          </div>
+          <button type="submit">运行证据与风险审查 <span>→</span></button>
+        </form>
+
+        <section class="panel result-panel" aria-live="polite">
+          <div class="panel-title"><span>02</span><h2>决策结果</h2></div>
+          <div id="idle" class="idle"><div class="radar"></div><p>等待一次分析</p></div>
+          <div id="results" hidden>
+            <div class="verdict-row"><p>规则结论</p><strong id="verdict"></strong></div>
+            <div class="metrics">
+              <article><span>成功后净利</span><b id="netSuccess">—</b></article>
+              <article><span>概率加权净利</span><b id="expectedNet">—</b></article>
+              <article><span>最大现金损失</span><b id="maxLoss">—</b></article>
+              <article><span>本金暴露</span><b id="exposure">—</b></article>
+            </div>
+            <div class="gate" id="gate"><span>HUMAN GATE</span><strong id="gateState"></strong><p id="gateReason"></p></div>
+            <div class="narrative"><h3>智能体说明</h3><p id="summary"></p><p id="evidence"></p></div>
+            <div id="sourceBlock" hidden><h3>可核验来源</h3><ol id="sources" class="sources"></ol></div>
+            <div><h3>风险/硬性阻断</h3><ul id="risks"></ul></div>
+            <details class="audit"><summary>查看审计记录</summary><pre id="auditLog"></pre></details>
+          </div>
+        </section>
+      </section>
+
+      <footer><span>NEBIUS NEMOTRON</span><span>×</span><span>TAVILY EVIDENCE</span><span>×</span><span>DETERMINISTIC POLICY</span></footer>
+    </main>
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>
