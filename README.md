@@ -9,6 +9,10 @@ Small-Stake Sentinel is a human-gated AI agent for evaluating tiny business expe
 
 The project was created for the Nebius x NVIDIA Global AI Hackathon. The current repository runs in deterministic demo mode when API keys are absent, so the interface and safety logic can be tested without spending money.
 
+**Live demo:** https://small-stake-sentinel.l13630382245.chatgpt.site
+
+The hosted version uses the Cloudflare Workers-compatible entry point in `worker/index.js`. The zero-dependency Node server remains available for local development and policy tests.
+
 ## Architecture
 
 ```mermaid
