@@ -1,0 +1,94 @@
+name: Tavily live integration test
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  tavily-smoke-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out project
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Run deterministic policy tests
+        run: npm test
+
+      - name: Exercise the project with a live Tavily search
+        env:
+          TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
+        run: |
+          set -euo pipefail
+          node server.mjs > /tmp/sentinel-server.log 2>&1 &
+          APP_PID=$!
+          trap 'kill "$APP_PID"' EXIT
+          for attempt in {1..20}; do
+            if curl -fsS http://127.0.0.1:3000/api/health > /dev/null; then break; fi
+            sleep 0.25
+          done
+
+          node --input-type=module <<'NODE'
+          import { appendFile, writeFile } from 'node:fs/promises';
+
+          const response = await fetch('http://127.0.0.1:3000/api/analyze', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({
+              bankroll: 100,
+              searchQuery: 'Tavily Search API official documentation 2026',
+              opportunity: {
+                name: 'Live Tavily integration check',
+                inputCost: 0,
+                expectedRevenue: 0,
+                platformFees: 0,
+                shipping: 0,
+                successProbability: 60,
+                refundProbability: 0,
+                hasVerifiableBuyer: true,
+                requiresAdvanceFee: false,
+                externalCommitment: false,
+                policyRisk: 'low'
+              }
+            })
+          });
+
+          const data = await response.json();
+          if (!response.ok) throw new Error(data.error || ('HTTP ' + response.status));
+          if (!Array.isArray(data.evidence) || data.evidence.length === 0) {
+            throw new Error('Tavily returned no evidence results');
+          }
+
+          const safe = data.evidence.slice(0, 3).map(({ title, url, score }) => ({ title, url, score }));
+          await writeFile('/tmp/tavily-smoke-result.json', JSON.stringify({
+            provider: 'Tavily Search API',
+            live_call: true,
+            result_count: data.evidence.length,
+            results: safe
+          }, null, 2));
+
+          const clean = (value) => String(value ?? '').replace(/[|\n\r]/g, ' ');
+          let summary = '# Tavily live integration test\n\n';
+          summary += '✅ Small-Stake Sentinel completed a real Tavily Search API call.\n\n';
+          summary += '| # | Result | Score |\n|---:|---|---:|\n';
+          safe.forEach((item, index) => {
+            summary += '| ' + (index + 1) + ' | [' + clean(item.title) + '](' + item.url + ') | ' + clean(item.score) + ' |\n';
+          });
+          await appendFile(process.env.GITHUB_STEP_SUMMARY, summary);
+          console.log('Live Tavily results:', data.evidence.length);
+          NODE
+
+      - name: Publish sanitized proof artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: tavily-live-smoke-result
+          path: /tmp/tavily-smoke-result.json
+          retention-days: 30
+          if-no-files-found: error
