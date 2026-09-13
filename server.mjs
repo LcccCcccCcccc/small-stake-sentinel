@@ -47,9 +47,11 @@ async function searchEvidence(query) {
   if (!process.env.TAVILY_API_KEY || !query) return [];
   const response = await fetch("https://api.tavily.com/search", {
     method: "POST",
-    headers: { "content-type": "application/json" },
+    headers: {
+      authorization: `Bearer ${process.env.TAVILY_API_KEY}`,
+      "content-type": "application/json"
+    },
     body: JSON.stringify({
-      api_key: process.env.TAVILY_API_KEY,
       query,
       search_depth: "advanced",
       max_results: 5,
